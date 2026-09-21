@@ -1,0 +1,25 @@
+# raw full-game broadcast video — huge, copyrighted, never needed for the portal
+noaudio/
+
+# cut clips (raw broadcast mp4) and extracted debug frames — not used by the
+# deployed portal (it only plays the skeleton-overlay *_pose_preview_web.mp4)
+clips/pull_up/*.mp4
+clips/catch_and_shoot/*.mp4
+clips/frames/
+clips/review_state.json
+
+# non-web-optimized preview videos (large; keep only *_pose_preview_web.mp4,
+# which this pattern does not match since it ends in _web.mp4, not _preview.mp4)
+tracks/*/*_preview.mp4
+
+# personal / unrelated to this project
+interview_prep/
+
+# local tooling / envs / caches
+.venv/
+.claude/
+__pycache__/
+*.pyc
+scripts/__pycache__/
+scripts/.model_cache/
+.DS_Store
