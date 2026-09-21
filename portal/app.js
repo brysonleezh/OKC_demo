@@ -200,7 +200,7 @@ const DEMO_BULLETS = [
   },
   {
     strong: "Turns coach-speak into a number.",
-    rest: ' "His elbow drops on misses" becomes 158° vs 164°, a target a development coach can track week over week.',
+    rest: ' "His elbow drops on pull-up misses" becomes 154° vs 163°, a target a development coach can track week over week.',
   },
   {
     strong: "Fits the charting loop.",
@@ -269,14 +269,14 @@ function renderDemoFlow() {
             <h2 class="df-section-title">2 &middot; The Finding</h2>
             <div class="df-card-grid">
               <div class="df-card df-card-a">
-                <div class="df-card-label">Elbow angle at release</div>
-                <div class="df-stat-row"><span class="df-stat-num make">163.9&deg;</span><span class="df-stat-tag">makes</span></div>
-                <div class="df-stat-row"><span class="df-stat-num miss">158.4&deg;</span><span class="df-stat-tag">misses</span></div>
-                <div class="df-footnote">d = 0.44 — largest of the five metrics, but not reliable at this n.</div>
+                <div class="df-card-label">Elbow angle at release &mdash; pull-up shots</div>
+                <div class="df-stat-row"><span class="df-stat-num make">163.4&deg;</span><span class="df-stat-tag">makes</span></div>
+                <div class="df-stat-row"><span class="df-stat-num miss">153.9&deg;</span><span class="df-stat-tag">misses</span></div>
+                <div class="df-footnote">d = 0.67 on pull-ups (n=6 makes, 9 misses) &mdash; the gap nearly disappears on catch-and-shoot (164.5&deg; vs 163.4&deg;), so this reads as a pull-up-specific mechanic, not a universal one.</div>
               </div>
               <div class="df-card df-card-b">
                 <div class="df-card-label">Read it honestly</div>
-                <div class="df-card-body">Not statistically reliable: p = 0.22 at n = 27. Flagged as a hypothesis to test, not a conclusion to coach on.</div>
+                <div class="df-card-body">Suggestive, not proven: p = 0.16 on 15 pull-up shots. Flagged as a hypothesis to test, not a conclusion to coach on.</div>
               </div>
               <div class="df-card df-card-c">
                 <div class="df-card-label">Why it still matters</div>
@@ -327,12 +327,12 @@ function renderOverview() {
       <div class="kpi-row" id="kpi-row"></div>
     </section>
     <section>
-      <h2 class="section-title">Shot type × outcome<span class="hint">mean ± std at release, small-n — read alongside the individual shots below</span></h2>
-      <div class="grid-2x2" id="grid-2x2"></div>
+      <h2 class="section-title">Shot type × outcome<span class="hint">color = value for the selected metric, light to dark &mdash; small-n, read alongside the individual shots below</span></h2>
+      <div class="filter-row" id="metric-select-row"></div>
+      <div id="heatmap-wrap"></div>
     </section>
     <section>
-      <h2 class="section-title">Mechanics trajectories<span class="hint">thin lines = individual shots, bold line = group mean, shaded band = &plusmn;1 SEM &mdash; overlapping bands mean the gap isn't reliable at this n</span></h2>
-      <div class="filter-row" id="metric-select-row"></div>
+      <h2 class="section-title">Mechanics trajectories<span class="hint">same metric as above &middot; thin lines = individual shots, bold line = group mean, shaded band = &plusmn;1 SEM &mdash; overlapping bands mean the gap isn't reliable at this n</span></h2>
       <div class="chart-grid" id="compare-charts"></div>
     </section>
     <section>
@@ -345,8 +345,8 @@ function renderOverview() {
   browseIndex = 0;
   renderPlayerCard();
   renderKPIs();
-  render2x2();
   renderMetricSelect();
+  renderHeatmap();
   renderCompareCharts();
   renderClipFilters();
   renderClipBrowser();
@@ -402,39 +402,119 @@ function renderKPIs() {
     .join("");
 }
 
-function render2x2() {
-  const metrics = DATA.metrics;
-  const labels = DATA.metric_labels;
-  const cellHtml = (key, colorVar) => {
-    const cell = DATA.grid[key];
-    const rows = metrics
-      .map(
-        (m) =>
-          `<tr><td class="m-name">${labels[m]}</td><td class="m-val">${fmtMetric(m, cell.metrics[m].mean)} ${
-            cell.metrics[m].std !== null ? `<span style="color:var(--text-muted)">±${fmtMetric(m, cell.metrics[m].std).replace(/[^0-9.\-]/g, "")}</span>` : ""
-          }</td></tr>`
-      )
-      .join("");
-    return `<div class="cell">
-      <span class="n-badge"><span class="swatch" style="background:var(${colorVar})"></span>n = ${cell.n}</span>
-      <table class="metric-mini-table">${rows}</table>
+// population std (N divisor), matching build_portal_data.py's mean_std()
+function computeGroupStats(clips) {
+  const out = { n: clips.length, metrics: {} };
+  DATA.metrics.forEach((m) => {
+    const vals = clips.map((c) => c.release_values[m]).filter((v) => v !== null && v !== undefined);
+    if (!vals.length) {
+      out.metrics[m] = { mean: null, std: null };
+      return;
+    }
+    const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+    const variance = vals.reduce((a, v) => a + (v - mean) ** 2, 0) / vals.length;
+    out.metrics[m] = { mean, std: Math.sqrt(variance) };
+  });
+  return out;
+}
+
+function hexToRgbTuple(hex) {
+  const h = hex.replace("#", "");
+  return [parseInt(h.substring(0, 2), 16), parseInt(h.substring(2, 4), 16), parseInt(h.substring(4, 6), 16)];
+}
+
+// sequential ramp: light -> dark, t in [0,1]. Returns {bg, fg} css colors.
+function heatColor(t) {
+  const light = hexToRgbTuple(cssVar("--brand-blue-wash"));
+  const dark = hexToRgbTuple(cssVar("--brand-navy"));
+  const rgb = light.map((c, i) => Math.round(c + (dark[i] - c) * t));
+  const luminance = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+  return { bg: `rgb(${rgb.join(",")})`, fg: luminance < 140 ? "#ffffff" : "var(--text-primary)" };
+}
+
+function renderHeatmap() {
+  const metric = compareMetric;
+  const label = DATA.metric_labels[metric];
+
+  const pullUp = DATA.clips.filter((c) => c.shot_type_group === "Pull-up");
+  const catchShoot = DATA.clips.filter((c) => c.shot_type_group === "Catch-and-shoot");
+  const makes = DATA.clips.filter((c) => c.result_en === "Make");
+  const misses = DATA.clips.filter((c) => c.result_en === "Miss");
+
+  const cellStats = {
+    puMake: DATA.grid["Pull-up|Make"].metrics[metric],
+    puMiss: DATA.grid["Pull-up|Miss"].metrics[metric],
+    puTotal: computeGroupStats(pullUp).metrics[metric],
+    csMake: DATA.grid["Catch-and-shoot|Make"].metrics[metric],
+    csMiss: DATA.grid["Catch-and-shoot|Miss"].metrics[metric],
+    csTotal: computeGroupStats(catchShoot).metrics[metric],
+    makeTotal: computeGroupStats(makes).metrics[metric],
+    missTotal: computeGroupStats(misses).metrics[metric],
+    grand: computeGroupStats(DATA.clips).metrics[metric],
+  };
+  const nFor = {
+    puMake: DATA.grid["Pull-up|Make"].n,
+    puMiss: DATA.grid["Pull-up|Miss"].n,
+    puTotal: pullUp.length,
+    csMake: DATA.grid["Catch-and-shoot|Make"].n,
+    csMiss: DATA.grid["Catch-and-shoot|Miss"].n,
+    csTotal: catchShoot.length,
+    makeTotal: makes.length,
+    missTotal: misses.length,
+    grand: DATA.clips.length,
+  };
+
+  const means = Object.values(cellStats).map((s) => s.mean).filter((v) => v !== null && v !== undefined);
+  const lo = Math.min(...means);
+  const hi = Math.max(...means);
+
+  const heatCell = (key, badgeLabel) => {
+    const s = cellStats[key];
+    if (s.mean === null || s.mean === undefined) {
+      return `<div class="heat-cell heat-empty">&mdash;</div>`;
+    }
+    const t = hi > lo ? (s.mean - lo) / (hi - lo) : 0.5;
+    const { bg, fg } = heatColor(t);
+    return `<div class="heat-cell${badgeLabel ? " marginal" : ""}" style="background:${bg}; color:${fg};">
+      ${badgeLabel ? `<div class="heat-badge">${badgeLabel}</div>` : ""}
+      <div class="heat-value">${fmtMetric(metric, s.mean)}</div>
+      <div class="heat-meta">&plusmn;${fmtMetric(metric, s.std)} &middot; n=${nFor[key]}</div>
     </div>`;
   };
 
+  const legend = `
+    <div class="heat-legend">
+      <span>${fmtMetric(metric, lo)}</span>
+      <span class="heat-legend-bar" style="background: linear-gradient(90deg, ${cssVar("--brand-blue-wash")}, ${cssVar("--brand-navy")});"></span>
+      <span>${fmtMetric(metric, hi)}</span>
+      <span class="heat-legend-caption">${label}, low &rarr; high across these 9 groups</span>
+    </div>`;
+
   const html = `
-    <div class="cell corner col-head"></div>
-    <div class="cell head col-head"><span class="swatch" style="background:var(--series-make)"></span>Make</div>
-    <div class="cell head col-head"><span class="swatch" style="background:var(--series-miss)"></span>Miss</div>
+    ${legend}
+    <div class="heatmap-grid">
+      <div class="cell corner col-head"></div>
+      <div class="cell head col-head"><span class="swatch" style="background:var(--series-make)"></span>Make</div>
+      <div class="cell head col-head"><span class="swatch" style="background:var(--series-miss)"></span>Miss</div>
+      <div class="cell head col-head marginal">Total</div>
 
-    <div class="cell head row-label">Pull-up</div>
-    ${cellHtml("Pull-up|Make", "--series-make")}
-    ${cellHtml("Pull-up|Miss", "--series-miss")}
+      <div class="cell head row-label">Pull-up</div>
+      ${heatCell("puMake")}
+      ${heatCell("puMiss")}
+      ${heatCell("puTotal", "Total")}
 
-    <div class="cell head row-label">Catch&#8209;and&#8209;shoot</div>
-    ${cellHtml("Catch-and-shoot|Make", "--series-make")}
-    ${cellHtml("Catch-and-shoot|Miss", "--series-miss")}
+      <div class="cell head row-label">Catch&#8209;and&#8209;shoot</div>
+      ${heatCell("csMake")}
+      ${heatCell("csMiss")}
+      ${heatCell("csTotal", "Total")}
+
+      <div class="cell head row-label marginal">Total</div>
+      ${heatCell("makeTotal", "Total")}
+      ${heatCell("missTotal", "Total")}
+      ${heatCell("grand", "All shots")}
+    </div>
   `;
-  document.getElementById("grid-2x2").innerHTML = html;
+  document.getElementById("heatmap-wrap").innerHTML = html;
 }
 
 function renderMetricSelect() {
@@ -448,6 +528,7 @@ function renderMetricSelect() {
   wrap.querySelector("#metric-select").value = compareMetric;
   wrap.querySelector("#metric-select").addEventListener("change", (e) => {
     compareMetric = e.target.value;
+    renderHeatmap();
     renderCompareCharts();
   });
 }
