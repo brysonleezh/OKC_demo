@@ -182,13 +182,16 @@ const DEMO_AGENDA = [
   { time: "4:30", label: "Questions" },
 ];
 
-const DEMO_DEFS = [
-  { k: "Clip", v: "30 shot attempts cut from broadcast footage — 15 pull-up, 15 catch-and-shoot." },
-  { k: "Track + pose", v: "Player tracking + RTMPose keypoints on every frame; clips failing QC are dropped." },
-  { k: "Release detection", v: "Release frame auto-detected; metrics sampled on a ±20-frame window around it." },
-  { k: "Mechanics", v: "Elbow angle, knee angle, wrist height, body lean, guide-hand separation — per frame." },
-  { k: "Dashboard", v: "Per-shot skeleton video + trajectory charts, and a shot type × outcome comparison." },
-];
+function buildDemoDefs() {
+  const s = DATA.summary;
+  return [
+    { k: "Clip", v: `${s.total} shot attempts cut from broadcast footage — ${s.by_shot_type["Pull-up"].n} pull-up, ${s.by_shot_type["Catch-and-shoot"].n} catch-and-shoot.` },
+    { k: "Track + pose", v: "Player tracking + RTMPose keypoints on every frame; clips failing QC are dropped." },
+    { k: "Release detection", v: "Release frame auto-detected; metrics sampled on a ±20-frame window around it." },
+    { k: "Mechanics", v: "Elbow angle, knee angle, wrist height, body lean, guide-hand separation — per frame." },
+    { k: "Dashboard", v: "Per-shot skeleton video + trajectory charts, and a shot type × outcome comparison." },
+  ];
+}
 
 const DEMO_BULLETS = [
   {
@@ -197,7 +200,7 @@ const DEMO_BULLETS = [
   },
   {
     strong: "Turns coach-speak into a number.",
-    rest: ' "His elbow drops on misses" becomes 142° vs 164°, a target a development coach can track week over week.',
+    rest: ' "His elbow drops on misses" becomes 158° vs 164°, a target a development coach can track week over week.',
   },
   {
     strong: "Fits the charting loop.",
@@ -210,7 +213,7 @@ function renderDemoFlow() {
   document.getElementById("portal-header").style.display = "";
   setHeaderContent(
     "Shot Mechanics from Broadcast Video — Project Brief",
-    "Ajay Mitchell · 30 shots · RTMPose pipeline · built solo",
+    `Ajay Mitchell · ${DATA.summary.total} shots · RTMPose pipeline · built solo`,
     `<div class="header-pill-badge">Video Analysis &amp; Charting · Player Development</div>`
   );
   document.getElementById("view-overview").style.display = "none";
@@ -230,7 +233,7 @@ function renderDemoFlow() {
     ? `<div class="df-cue-box"><strong>Cue:</strong> keep each section under 75 seconds; land on the caveat yourself before they ask.</div>`
     : "";
 
-  const defsHtml = DEMO_DEFS.map(
+  const defsHtml = buildDemoDefs().map(
     (d) => `<div class="df-def-row"><dt>${escapeHtml(d.k)}</dt><dd>${d.v}</dd></div>`
   ).join("");
 
@@ -268,12 +271,12 @@ function renderDemoFlow() {
               <div class="df-card df-card-a">
                 <div class="df-card-label">Elbow angle at release</div>
                 <div class="df-stat-row"><span class="df-stat-num make">163.9&deg;</span><span class="df-stat-tag">makes</span></div>
-                <div class="df-stat-row"><span class="df-stat-num miss">142.0&deg;</span><span class="df-stat-tag">misses</span></div>
-                <div class="df-footnote">d = 0.60 — the largest gap of the five metrics.</div>
+                <div class="df-stat-row"><span class="df-stat-num miss">158.4&deg;</span><span class="df-stat-tag">misses</span></div>
+                <div class="df-footnote">d = 0.44 — largest of the five metrics, but not reliable at this n.</div>
               </div>
               <div class="df-card df-card-b">
                 <div class="df-card-label">Read it honestly</div>
-                <div class="df-card-body">Suggestive, not proven: p = 0.10 at n = 30. Flagged as a hypothesis to test, not a conclusion to coach on.</div>
+                <div class="df-card-body">Not statistically reliable: p = 0.22 at n = 27. Flagged as a hypothesis to test, not a conclusion to coach on.</div>
               </div>
               <div class="df-card df-card-c">
                 <div class="df-card-label">Why it still matters</div>
@@ -288,7 +291,7 @@ function renderDemoFlow() {
           </section>
 
           <section class="df-footer-strip">
-            <p><strong>Then live:</strong> the full portal — filter any of the 30 shots, open its skeleton clip and per-frame charts.</p>
+            <p><strong>Then live:</strong> the full portal — filter any of the ${DATA.summary.total} shots, open its skeleton clip and per-frame charts.</p>
             <button class="df-open-portal-btn" id="open-portal-btn">Open Portal &rarr;</button>
           </section>
         </div>
@@ -383,7 +386,7 @@ function renderPlayerCard() {
 function renderKPIs() {
   const s = DATA.summary;
   const tiles = [
-    { label: "Total shots analyzed", value: s.total, sub: "30 clips passed tracking + pose QC" },
+    { label: "Total shots analyzed", value: s.total, sub: `${s.total} clips passed tracking + pose QC` },
     { label: "Make rate", value: `${s.make_pct}%`, sub: `${s.n_make} make / ${s.n_miss} miss` },
     { label: "Pull-up", value: s.by_shot_type["Pull-up"].n, sub: `${s.by_shot_type["Pull-up"].n_make} made` },
     { label: "Catch-and-shoot", value: s.by_shot_type["Catch-and-shoot"].n, sub: `${s.by_shot_type["Catch-and-shoot"].n_make} made` },
