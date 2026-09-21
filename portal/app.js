@@ -187,7 +187,7 @@ function buildDemoDefs() {
   return [
     { k: "Clip", v: `${s.total} shot attempts cut from broadcast footage — ${s.by_shot_type["Pull-up"].n} pull-up, ${s.by_shot_type["Catch-and-shoot"].n} catch-and-shoot.` },
     { k: "Track + pose", v: "Player tracking + RTMPose keypoints on every frame; clips failing QC are dropped." },
-    { k: "Release detection", v: "Release frame auto-detected; metrics sampled on a ±20-frame window around it." },
+    { k: "Release detection", v: "Release frame marked by hand on a scrubber, then reviewed; metrics sampled on a ±20-frame window around it." },
     { k: "Mechanics", v: "Elbow angle, knee angle, wrist height, body lean, guide-hand separation — per frame." },
     { k: "Dashboard", v: "Per-shot skeleton video + trajectory charts, and a shot type × outcome comparison." },
   ];
@@ -255,7 +255,7 @@ function renderDemoFlow() {
             <video class="df-video" id="demo-video" src="${DEMO_VIDEO_URL}" controls autoplay muted loop playsinline></video>
             <div class="df-chip-row">
               <span class="df-chip">RTMPose 2D keypoints, every frame</span>
-              <span class="df-chip">Release frame auto-detected</span>
+              <span class="df-chip">Release frame marked by hand, then reviewed</span>
               <span class="df-chip">No wearables — broadcast footage only</span>
             </div>
           </section>
