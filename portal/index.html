@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ajay Mitchell — Shot Mechanics Portal</title>
 <link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<header class="top">
+<header class="top" id="portal-header" style="display:none;">
   <div class="wrap header-inner">
     <div class="logo-badge">
       <svg width="46" height="46" viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OKC badge">
@@ -18,15 +21,18 @@
         <text x="23" y="41.5" text-anchor="middle" font-family="system-ui, sans-serif" font-size="7.5" font-weight="700" fill="#ffffff" letter-spacing="0.5">OKC</text>
       </svg>
     </div>
-    <div>
-      <h1>Ajay Mitchell — Shot Mechanics Portal</h1>
+    <div class="header-text">
+      <h1 id="header-title">Ajay Mitchell — Shot Mechanics Portal</h1>
       <div class="subtitle" id="header-subtitle">Loading…</div>
     </div>
+    <div class="header-pill" id="header-pill"></div>
   </div>
 </header>
 
+<div id="view-demo"></div>
+
 <div class="wrap">
-  <div id="view-overview"></div>
+  <div id="view-overview" style="display:none;"></div>
   <div id="view-detail" style="display:none;"></div>
 </div>
 

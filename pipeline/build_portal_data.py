@@ -45,6 +45,26 @@ def result_en(result):
     return "Make" if result == "命中" else "Miss"
 
 
+# raw notes are short structured Chinese phrases like "Caruso助攻，三分"
+# ("assisted by Caruso, three-pointer") — translate to English for the portal
+NOTE_FIXED = {
+    "三分": "3PT",
+    "无助攻，三分": "Unassisted · 3PT",
+}
+
+
+def translate_note(note):
+    note = note.strip()
+    if not note:
+        return ""
+    if note in NOTE_FIXED:
+        return NOTE_FIXED[note]
+    if "助攻" in note:
+        name = note.split("助攻")[0]
+        return f"Assisted by {name} · 3PT" if "三分" in note else f"Assisted by {name}"
+    return note
+
+
 def value_at_release(trajectory, metric):
     """Value at rel_frame == 0, or nearest available frame if that one is missing/None."""
     candidates = sorted(trajectory, key=lambda t: abs(t["rel_frame"]))
@@ -109,12 +129,11 @@ def main():
                 "game_id": row["game_id"],
                 "game_clock": row["game_clock"],
                 "distance_ft": int(row["distance_ft"]) if row["distance_ft"] else None,
-                "result": row["result"],
                 "result_en": result_en(row["result"]),
                 "shot_type": row["shot_type"],
                 "shot_type_group": group_shot_type(row["shot_type"]),
                 "video_time": row["video_time"],
-                "note": row["note"],
+                "note": translate_note(row["note"]),
                 "video_url": video_rel,
                 "fps": pose["fps"],
                 "release_frame": pose["release_frame"],

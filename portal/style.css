@@ -29,37 +29,7 @@
   --brand-header-sub: #a9d6f2;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --surface-1: #14191f;
-    --page: #0a0e13;
-    --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
-    --gridline: #262c33;
-    --baseline: #383f47;
-    --border: rgba(255, 255, 255, 0.10);
-    --border-strong: rgba(255, 255, 255, 0.18);
-    --hover-wash: rgba(255, 255, 255, 0.06);
-
-    --series-make: #3987e5;
-    --series-miss: #d95926;
-    --series-pullup: #199e70;
-    --series-catchshoot: #c98500;
-    --success-text: #0ca30c;
-
-    --brand-navy: #041c3a;
-    --brand-navy-2: #0a3d7a;
-    --brand-blue: #3ea8e0;
-    --brand-blue-light: #133654;
-    --brand-blue-wash: #0f2438;
-    --brand-orange: #ff6a4d;
-    --brand-yellow: #fdbb30;
-    --brand-header-text: #ffffff;
-    --brand-header-sub: #8fc6ea;
-  }
-}
+/* always light — no dark-mode variant, regardless of system/browser theme */
 
 * { box-sizing: border-box; }
 
@@ -97,6 +67,8 @@ header.top .header-inner {
 
 header.top .logo-badge { flex: none; }
 
+header.top .header-text { flex: 1 1 auto; min-width: 0; }
+
 header.top h1 {
   font-size: 21px;
   font-weight: 650;
@@ -107,6 +79,34 @@ header.top h1 {
 header.top .subtitle {
   color: var(--brand-header-sub);
   font-size: 13.5px;
+}
+
+header.top .header-pill:not(:empty) { flex: none; margin-left: auto; }
+
+.header-pill-badge {
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  header.top .header-inner { flex-wrap: wrap; }
+  header.top .header-pill:not(:empty) {
+    flex: 1 1 100%;
+    min-width: 0;
+    margin-left: 0;
+  }
+  .header-pill-badge {
+    display: block;
+    white-space: normal;
+    text-align: center;
+  }
 }
 
 /* original team-color badge (not the official trademarked logo) */
@@ -127,15 +127,17 @@ header.top .subtitle {
 
 .player-card .photo-col {
   position: relative;
-  background: var(--brand-navy);
+  background: linear-gradient(180deg, #ffffff 0%, var(--brand-blue-wash) 100%);
 }
 
 .player-card .photo-col img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: bottom;
   display: block;
   min-height: 220px;
+  padding: 10px;
 }
 
 .player-card .photo-col .jersey-tag {
@@ -175,7 +177,7 @@ header.top .subtitle {
 
 .player-card .name-row .position-badge {
   background: var(--brand-blue-light);
-  color: var(--brand-navy);
+  color: var(--brand-blue);
   font-size: 12px;
   font-weight: 650;
   padding: 3px 10px;
@@ -226,7 +228,7 @@ header.top .subtitle {
 .stat-pill .v {
   font-size: 17px;
   font-weight: 700;
-  color: var(--brand-navy);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -323,6 +325,15 @@ h2.section-title .hint {
 
 .grid-2x2 .cell.corner { background: var(--page); }
 
+@media (max-width: 640px) {
+  .grid-2x2 { grid-template-columns: 1fr 1fr; }
+  .grid-2x2 .col-head { display: none; }
+  .grid-2x2 .row-label {
+    grid-column: 1 / -1;
+    font-size: 13px;
+  }
+}
+
 .grid-2x2 .cell .n-badge {
   display: inline-block;
   font-size: 12px;
@@ -351,33 +362,6 @@ h2.section-title .hint {
   color: var(--text-primary);
 }
 
-/* Segmented control */
-.segmented {
-  display: inline-flex;
-  border: 1px solid var(--border-strong);
-  border-radius: 7px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.segmented button {
-  font: inherit;
-  font-size: 13px;
-  border: none;
-  background: var(--surface-1);
-  color: var(--text-secondary);
-  padding: 7px 14px;
-  cursor: pointer;
-}
-
-.segmented button + button { border-left: 1px solid var(--border); }
-
-.segmented button.active {
-  background: var(--brand-navy);
-  color: #fff;
-  font-weight: 600;
-}
-
 .chart-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -403,7 +387,7 @@ h2.section-title .hint {
   margin-bottom: 8px;
 }
 
-.chart-card canvas { max-height: 220px; }
+.chart-card canvas { max-height: 320px; }
 
 .legend-row {
   display: flex;
@@ -423,6 +407,12 @@ h2.section-title .hint {
   align-items: center;
   margin-bottom: 12px;
   flex-wrap: wrap;
+}
+
+.filter-row label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .filter-row select, .filter-row input[type="text"] {
@@ -557,6 +547,76 @@ table.clip-table tbody tr:last-child td { border-bottom: none; }
   color: var(--text-muted);
 }
 
+.game-info-panel {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.game-info-panel .gi-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+.game-info-panel .gi-row + .gi-row { border-top: 1px solid var(--gridline); }
+
+.game-info-panel .gi-k {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.game-info-panel .gi-v {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: right;
+}
+
+.browse-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.browse-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-1);
+  color: var(--brand-blue);
+  cursor: pointer;
+}
+
+.browse-btn:hover:not(:disabled) { background: var(--brand-blue-wash); }
+
+.browse-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.browse-pos {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+  text-align: center;
+}
+
+.browse-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
 .detail-chart-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -568,6 +628,8 @@ table.clip-table tbody tr:last-child td { border-bottom: none; }
   .chart-grid { grid-template-columns: 1fr; }
   .detail-layout { grid-template-columns: 1fr; }
   .detail-chart-grid { grid-template-columns: 1fr; }
+  .browse-nav { flex-wrap: wrap; }
+  .browse-hint { margin-left: 0; flex: 1 1 100%; }
 }
 
 .empty-note {
@@ -575,4 +637,318 @@ table.clip-table tbody tr:last-child td { border-bottom: none; }
   font-size: 13px;
   padding: 24px;
   text-align: center;
+}
+
+/* =========================================================
+   Demo Flow — interview landing page ("Scout Report" variant)
+   Reuses the same header (#portal-header) and the same reactive
+   Thunder theme tokens as the rest of the portal, so it tracks
+   light/dark mode instead of carrying its own fixed palette.
+   ========================================================= */
+
+.demo-flow {
+  font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--page);
+  color: var(--text-secondary);
+}
+
+.demo-flow * { box-sizing: border-box; }
+
+.demo-flow .df-wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 42px 56px;
+}
+
+.demo-flow .df-body-grid {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.demo-flow .df-rail {
+  position: sticky;
+  top: 24px;
+}
+
+.demo-flow .df-rail-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.demo-flow .df-agenda-row {
+  border-left: 3px solid var(--border);
+  padding: 6px 0 6px 12px;
+  margin-bottom: 4px;
+}
+
+.demo-flow .df-agenda-row .df-time {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-blue);
+}
+
+.demo-flow .df-agenda-row .df-label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.demo-flow .df-cue-box {
+  margin-top: 18px;
+  background: var(--surface-1);
+  border: 1px solid var(--brand-yellow);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+.demo-flow .df-cue-box strong { font-weight: 700; }
+
+.demo-flow .df-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.demo-flow .df-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 6px;
+  display: block;
+  object-fit: contain;
+}
+
+.demo-flow .df-video-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--brand-blue-wash);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 20px;
+}
+
+.demo-flow .df-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.demo-flow .df-chip {
+  background: var(--brand-blue-light);
+  color: var(--brand-blue);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-radius: 100px;
+}
+
+.demo-flow h2.df-section-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-blue);
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.demo-flow .df-def-row {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--gridline);
+  font-size: 14.5px;
+}
+
+.demo-flow .df-def-row:last-child { border-bottom: none; }
+
+.demo-flow .df-def-row dt {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.demo-flow .df-def-row dd {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.demo-flow .df-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.demo-flow .df-card {
+  border-radius: 8px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+}
+
+.demo-flow .df-card .df-card-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  color: var(--text-muted);
+}
+
+.demo-flow .df-card-a .df-stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.demo-flow .df-card-a .df-stat-num {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.demo-flow .df-card-a .df-stat-num.make { color: var(--series-make); }
+.demo-flow .df-card-a .df-stat-num.miss { color: var(--series-miss); }
+
+.demo-flow .df-card-a .df-stat-tag {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.demo-flow .df-card-a .df-footnote {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 10px;
+  line-height: 1.45;
+}
+
+.demo-flow .df-card-b .df-card-label { color: var(--series-miss); }
+
+.demo-flow .df-card-b .df-card-body {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.demo-flow .df-card-c {
+  background: var(--brand-navy);
+  border-color: var(--brand-navy);
+  color: #ffffff;
+}
+
+.demo-flow .df-card-c .df-card-label { color: var(--brand-yellow); }
+
+.demo-flow .df-card-c .df-card-body {
+  font-size: 13.5px;
+  color: #ffffff;
+  line-height: 1.5;
+}
+
+.demo-flow .df-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.demo-flow .df-bullet {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 14.5px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.demo-flow .df-bullet .df-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--brand-orange);
+  margin-top: 6px;
+}
+
+.demo-flow .df-bullet strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.demo-flow .df-footer-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px 22px;
+}
+
+.demo-flow .df-footer-strip p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.demo-flow .df-footer-strip strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.demo-flow .df-open-portal-btn {
+  flex: none;
+  background: var(--brand-navy);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  border-radius: 5px;
+  padding: 11px 18px;
+  cursor: pointer;
+}
+
+.demo-flow .df-open-portal-btn:hover { background: var(--brand-navy-2); }
+
+@media (max-width: 760px) {
+  .demo-flow .df-def-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .demo-flow .df-wrap { padding: 24px 20px 44px; }
+  .demo-flow .df-body-grid { grid-template-columns: 1fr; }
+  .demo-flow .df-rail {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .demo-flow .df-rail-label { width: 100%; margin-bottom: 2px; }
+  .demo-flow .df-agenda-row { margin-bottom: 0; }
+  .demo-flow .df-cue-box { width: 100%; margin-top: 10px; }
 }
